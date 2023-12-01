@@ -1,4 +1,6 @@
 #include "Solver.h"
+#include <set>
+#include <map>
 
 class Day1 : public Solver
 {
@@ -10,3 +12,4 @@ public:
 };
 
 int findCalibrationValue(std::string& line);
+int findCalibrationValueWithWords(std::string& line, std::map<std::string, int>& dictionary);

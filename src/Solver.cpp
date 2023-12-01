@@ -11,7 +11,6 @@ std::ifstream& Solver::readFile()
     std::string path = "../data/";
     path.append(this->day());
     path.append("/input.txt");
-    std::cout<<"Opening file " << path << std::endl;
     std::ifstream* inputFile = new std::ifstream(path);
     if (!inputFile->is_open())
     {
