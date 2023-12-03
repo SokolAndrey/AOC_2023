@@ -9,6 +9,8 @@
 #include <vector>
 #include <sstream>
 #include <string>
+#include <algorithm>
+
 
 
 class Solver
