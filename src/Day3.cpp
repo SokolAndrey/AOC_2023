@@ -41,6 +41,52 @@ std::string typeToString(ElementType t)
     }
 }
 
+void readLine(const std::string &line, std::vector<GridElement>& elements, int y)
+{
+    std::string currentNumber;
+    for (int x = 0; x < line.length(); x++)
+    {
+        char currentChar = line[x];
+        if (std::isdigit(currentChar))
+        {
+            currentNumber += currentChar;
+        }
+        else
+        {
+            if (currentNumber.length() > 0)
+            {
+                int tmp = std::stoi(currentNumber);
+                std::set<Coordinate> currentNumberCoordinates;
+                for (int i = 0; i < currentNumber.length(); i++)
+                {
+                    currentNumberCoordinates.insert(Coordinate(x - i - 1, y));
+                }
+                GridElement ge = GridElement(NUMBER, tmp, currentNumberCoordinates);
+                elements.push_back(ge);
+                currentNumber.clear();
+            }
+            if (currentChar != '.' && currentChar && '\n' && currentChar != ' ' && currentChar != '\r')
+            {
+                Coordinate c = {x, y};
+                GridElement s = GridElement(SYMBOL, std::string(1, currentChar), std::set<Coordinate>{{x, y}});
+                elements.push_back(s);
+            }
+        }
+    }
+    if (currentNumber.length() > 0)
+    {
+        int tmp = std::stoi(currentNumber);
+        std::set<Coordinate> currentNumberCoordinates;
+        for (int i = 0; i < currentNumber.length(); i++)
+        {
+            currentNumberCoordinates.insert(Coordinate(line.length() - i - 1, y));
+        }
+        GridElement ge = GridElement(NUMBER, tmp, currentNumberCoordinates);
+        elements.push_back(ge);
+        currentNumber.clear();
+    }
+}
+
 int Day3::part1()
 {
     auto &inputFile = this->readFile();
@@ -49,55 +95,25 @@ int Day3::part1()
     int y = 0;
     std::string line;
     std::vector<GridElement> gridElements;
-    std::set<Coordinate> connected;
     while (std::getline(inputFile, line))
     {
-        std::string currentNumber;
-        for (int x = 0; x < line.length(); x++)
-        {
-            char currentChar = line[x];
-            if (std::isdigit(currentChar))
-            {
-                currentNumber += currentChar;
-            }
-            else
-            {
-                if (currentNumber.length() > 0)
-                {
-                    int tmp = std::stoi(currentNumber);
-                    std::set<Coordinate> currentNumberCoordinates;
-                    for (int i = 0; i < currentNumber.length(); i++)
-                    {
-                        currentNumberCoordinates.insert(Coordinate(x - i - 1, y));
-                    }
-                    GridElement ge = GridElement(NUMBER, tmp, currentNumberCoordinates);
-                    gridElements.push_back(ge);
-                    currentNumber.clear();
-                }
-                if (currentChar != '.' && currentChar && '\n' && currentChar != ' ' && currentChar != '\r')
-                {
-                    Coordinate c = {x,y};
-                    GridElement s = GridElement(SYMBOL, std::string(1, currentChar), std::set<Coordinate>{{x, y}});
-                    gridElements.push_back(s);
-                    connected.insert(c);
-                }
-            }
-        }
-        if (currentNumber.length() > 0)
-        {
-            int tmp = std::stoi(currentNumber);
-            std::set<Coordinate> currentNumberCoordinates;
-            for (int i = 0; i < currentNumber.length(); i++)
-            {
-                currentNumberCoordinates.insert(Coordinate(line.length() - i - 1, y));
-            }
-            GridElement ge = GridElement(NUMBER, tmp, currentNumberCoordinates);
-            gridElements.push_back(ge);
-            currentNumber.clear();
-        }
+        readLine(line, gridElements, y);
         ++y;
     }
-    int notIncluded = 0; 
+    std::set<Coordinate> connected;
+    for (auto &elem : gridElements)
+    {
+        if (elem.type == SYMBOL)
+        {
+            if (!elem.coordinates.empty())
+            {
+                Coordinate c = *elem.coordinates.begin();
+                connected.insert(c);
+            }
+        }
+    }
+    
+    int notIncluded = 0;
     for (auto &elem : gridElements)
     {
         if (elem.type == NUMBER)
@@ -108,7 +124,8 @@ int Day3::part1()
             {
                 for (Coordinate cc : connected)
                 {
-                    if (c == cc) { 
+                    if (c == cc)
+                    {
                         found = true;
                     }
                 }
@@ -116,7 +133,9 @@ int Day3::part1()
             if (found)
             {
                 res += elem.value;
-            } else {
+            }
+            else
+            {
                 notIncluded++;
             }
         }
@@ -127,7 +146,52 @@ int Day3::part1()
 
 int Day3::part2()
 {
-    return -1;
+    auto &inputFile = this->readFile();
+    int res = 0;
+    // line number
+    int y = 0;
+    std::string line;
+    std::vector<GridElement> gridElements;
+    while (std::getline(inputFile, line))
+    {
+        readLine(line, gridElements, y);
+        ++y;
+    }
+    std::set<Coordinate> gearCoordinates;
+    for (const auto& elem : gridElements)
+    {
+        if (elem.symbol == "*")
+        {
+            if (!elem.coordinates.empty())
+            {
+                Coordinate c = *elem.coordinates.begin();
+                gearCoordinates.insert(c);
+            }
+        }
+    }
+    for (const auto& gc : gearCoordinates)
+    {
+        int adj = 0;
+        std::vector<GridElement> adjElems;
+        for (auto& elem : gridElements)
+        {
+            if (elem.type == NUMBER)
+            {
+                for (const Coordinate ec : elem.neighbours()) {
+                    if (ec == gc)
+                    {
+                        adj++;
+                        adjElems.push_back(elem);
+                    }
+                }
+            }
+        }
+        if (adj == 2) 
+        {
+            res += adjElems[0].value * adjElems[1].value;
+        }
+    }
+    return res;
 }
 
 std::string Day3::day()
@@ -167,7 +231,8 @@ std::set<Coordinate> GridElement::neighbours()
         for (Coordinate n : cNeighbours)
         {
             auto it = coordinates.find(n);
-            if (it == coordinates.end()) {
+            if (it == coordinates.end())
+            {
                 res.insert(n);
             }
         }
