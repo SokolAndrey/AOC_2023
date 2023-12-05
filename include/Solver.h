@@ -10,7 +10,8 @@
 #include <sstream>
 #include <string>
 #include <algorithm>
-
+#include <tuple>
+#include <cmath>
 
 
 class Solver
