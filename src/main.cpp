@@ -3,6 +3,7 @@
 #include "Day2.h"
 #include "Day3.h"
 #include "Day4.h"
+#include "Day5.h"
 
 int main(int argc, char* argv[]) {
     if (argc != 2)
@@ -27,6 +28,9 @@ int main(int argc, char* argv[]) {
         break;
         case 4:
         solver = new Day4();
+        break;
+        case 5:
+        solver = new Day5();
         break;
         default:
         std::cerr << "There is no implementation for day " << day << " yet" << std::endl;
